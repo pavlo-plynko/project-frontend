@@ -7,28 +7,6 @@ $( document ).ready(function() {
     getRecords();
 });
 
-// $( document ).ready(function() {
-//     $.ajax({
-//         url: 'http://localhost:8090/rest/players',
-//         method: 'get',
-//         dataType: 'json',
-//         success: function(data){
-//             fillTable(data);
-//         }
-//     });
-// });
-//
-// $( document ).ready(function() {
-//     $.ajax({
-//         url: 'http://localhost:8090/rest/players/count',
-//         method: 'get',
-//         dataType: 'json',
-//         success: function(data){
-//             countOfRecords = data;
-//         }
-//     });
-// });
-
 function getRecordsCount() {
     $.get('http://localhost:8090/rest/players/count', function(data) {
         countOfRecords = data;
@@ -46,6 +24,19 @@ function getRecords() {
     });
 }
 
+function deleteRecord(id) {
+    $.ajax({
+        url: `http://localhost:8090/rest/players/${id}`,
+        type: 'DELETE',
+        success: function(data) {
+            getRecords();
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error('Error request:', errorThrown);
+        }
+    });
+}
+
 function updatePaginationButtons() {
     const optionSelector = document.querySelector('.records-on-page');
     recordsOnPage = optionSelector.value;
@@ -57,21 +48,7 @@ function updatePaginationButtons() {
     let recordsCounter = document.querySelector('.pagination-buttons');
     recordsCounter.innerHTML = '';
     recordsCounter.insertAdjacentHTML("beforeend", buttonsRow);
-
-    const paginationButtons = recordsCounter.querySelectorAll('button');
-
-    paginationButtons.forEach(button => {
-        button.addEventListener("click", function() {
-            pageNumber = button.value - 1;
-            getRecords();
-            paginationButtons.forEach(btn => {
-                if (btn !== button) {
-                    btn.classList.remove("pressed");
-                }
-            });
-            button.classList.add("pressed");
-        });
-    });
+    markActivePage(recordsCounter);
 }
 
 function handleSelectorOptions() {
@@ -81,13 +58,6 @@ function handleSelectorOptions() {
         getRecords();
     });
 }
-
-// function handlePaginationOptions() {
-//     const paginationButtons = document.querySelector('.pagination-btn');
-//     paginationButtons.addEventListener("click", function() {
-//         console.log('aaaaa')
-//     });
-// }
 
 function fillTable(data) {
     let newRow = '';
@@ -102,9 +72,41 @@ function fillTable(data) {
                          <td>${record.level}</td>
                          <td>${record.birthday}</td>
                          <td>${record.banned}</td>
+                         <td><img class="edit" src="/img/edit.png" alt="Edit"></td>
+                         <td><img class="delete" id=${record.id} src="/img/delete.png" alt="Delete"></td>
                     </tr>`;
     })
+
     let tableBody = document.querySelector('.players-list');
     tableBody.innerHTML = '';
     tableBody.insertAdjacentHTML("beforeend", newRow);
+
+    handleDeleteActions();
 }
+
+function handleDeleteActions() {
+    const deleteButtons = document.querySelectorAll('.delete');
+    deleteButtons.forEach(deleteButton => {
+        deleteButton.addEventListener("click", function () {
+            deleteRecord(deleteButton.id);
+        });
+    });
+}
+
+function markActivePage(recordsCounter) {
+    const paginationButtons = recordsCounter.querySelectorAll('button');
+
+    paginationButtons.forEach(button => {
+        button.addEventListener("click", function () {
+            pageNumber = button.value - 1;
+            getRecords();
+            paginationButtons.forEach(btn => {
+                if (btn !== button) {
+                    btn.classList.remove("pressed");
+                }
+            });
+            button.classList.add("pressed");
+        });
+    });
+}
+
