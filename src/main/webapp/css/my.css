@@ -1,0 +1,12 @@
+table, th, td {
+    border: 1px solid black;
+}
+
+button.pagination-btn:active {
+    color: #ff0000;
+}
+
+button.pagination-btn.pressed {
+    color: #ff0000;
+}
+
