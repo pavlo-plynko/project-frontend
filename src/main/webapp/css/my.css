@@ -1,0 +1,118 @@
+h2, .table-container, .pagination{
+    justify-content: center;
+    display: flex;
+}
+
+h1{
+    justify-content: center;
+    display: flex;
+    padding-top: 20px;
+}
+
+table{
+    border-collapse: collapse;
+    border-style: solid;
+    border-color: black;
+    border-width: 2px;
+}
+
+th, td{
+    border-bottom: 2px solid black;
+    padding: 8px;
+}
+
+th{
+    background-color: #f2f2f2;
+}
+
+.hidden {
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+.pagination button{
+    border: none;
+    padding: 5px 10px;
+}
+
+.pagination button:hover{
+    background-color: #adabab;
+}
+
+.pagination button.active, .new-account-fields button:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+.edit{
+    cursor: pointer;
+    background-image: url("/img/edit.png");
+    background-size: cover;
+    background-color: transparent;
+    background-position: center;
+    width: 50px;
+    height: 50px;
+    border: none;
+}
+
+.edit.active {
+    background-image: url("/img/save.png");
+}
+
+.delete{
+    cursor: pointer;
+    background-image: url("/img/delete.png");
+    background-size: cover;
+    background-color: transparent;
+    background-position: center;
+    width: 50px;
+    height: 50px;
+    border: none;
+}
+
+.count-per-page{
+    justify-content: center;
+    display: flex;
+    padding: 10px;
+}
+
+.count-per-page select{
+    border: none;
+    background: #d3d1d1;
+}
+
+.count-per-page label{
+    padding: 5px;
+}
+
+.new-account-fields input[type="text"], .new-account-fields select, .new-account-fields input[type="date"] {
+    border-radius: 50px;
+    border: none;
+    background: #e6e3e3;
+    height: 5%;
+    width: 20%;
+    padding-left: 10px;
+}
+
+.new-account-fields div{
+    margin: 10px;
+    padding-left: 20px;
+}
+
+.new-account-fields button{
+    border: none;
+    border-radius: 50px;
+    background: #e6e3e3;
+    height: 5%;
+    width: 20%;
+    font-weight: bold;
+}
+
+.account-class{
+    padding-left: 29px;
+}

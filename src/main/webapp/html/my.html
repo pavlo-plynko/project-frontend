@@ -1,12 +1,348 @@
-<html>
+<html lang="en">
 <head>
     <title>RPG</title>
-    <script src=https://code.jquery.com/jquery-3.6.0.min.js></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="/css/my.css" rel="stylesheet">
 </head>
 <body>
 <h1>RPG admin panel</h1>
 <h2>Accounts list:</h2>
+<div class="table-container">
+    <table id="users-table">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Title</th>
+            <th>Race</th>
+            <th>Profession</th>
+            <th>Level</th>
+            <th>Birthday</th>
+            <th>Banned</th>
+            <th>Edit</th>
+            <th>Delete</th>
+        </tr>
+        </thead>
+        <tbody id="users-table-body"></tbody>
+    </table>
+</div>
+
+<div class="count-per-page">
+    <label for="paging">Count per page: </label>
+    <select class="paging" id="paging">
+        <option value="3">3</option>
+        <option value="9">9</option>
+        <option value="15">15</option>
+        <option value="20">20</option>
+    </select>
+</div>
+
+<div class="pagination" id="pagination"></div>
+
+<script>
+    let globalCount = 0;
+    let currentPage = 0;
+    let itemsPerPage = parseInt($("#paging").val());
+    const tableBody = $("#users-table-body");
+
+    $(document).ready(function () {
+        $.ajax({
+            url: '/rest/players/count',
+            method: 'GET',
+            success: function (response) {
+                globalCount = response;
+                createPageButtons();
+                showPage(currentPage);
+            }
+        });
+
+        $("#paging").change(function paging() {
+            itemsPerPage = parseInt($(this).val());
+            currentPage = 0;
+            createPageButtons();
+            showPage(currentPage);
+        });
+
+        let savedPage = localStorage.getItem('currentPage');
+        let savedCountPerPage = localStorage.getItem('countPerPage');
+        let pageUpdated = localStorage.getItem('pageUpdated');
+        let selectedValue = localStorage.getItem('selectedValue');
+
+        if (savedPage && pageUpdated && savedCountPerPage && selectedValue) {
+            currentPage = parseInt(savedPage);
+            itemsPerPage = parseInt(savedCountPerPage);
+            $('#paging').val(selectedValue);
+            showPage(currentPage);
+            localStorage.removeItem('pageUpdated');
+        }else{
+            showPage(0);
+        }
+    });
+
+    function showPage(page) {
+        $.ajax({
+            url: '/rest/players',
+            method: 'GET',
+            data: { pageNumber: page, pageSize: itemsPerPage },
+            success: function (response) {
+                tableBody.empty();
+                response.forEach(user => {
+                    const formattedDate = new Date(user.birthday).toLocaleDateString('en-US');
+                    const row = `
+                        <tr data-user-id="${user.id}">
+                            <td>${user.id}</td>
+                            <td class="name">${user.name}</td>
+                            <td class="title">${user.title}</td>
+                            <td class="race">${user.race}</td>
+                            <td class="profession">${user.profession}</td>
+                            <td>${user.level}</td>
+                            <td>${formattedDate}</td>
+                            <td class="banned">${user.banned}</td>
+                            <td>
+                                <button class="edit" type="button" onclick="editUser(event, ${user.id})"></button>
+                            </td>
+                            <td>
+                                <button class="delete" type="button" onclick="deleteUser(event, ${user.id})"></button>
+                            </td>
+                        </tr>
+                    `;
+                    tableBody.append(row);
+                });
+                updateActiveButtonStates();
+            }
+        });
+    }
+
+    function createPageButtons() {
+        const totalPages = Math.ceil(globalCount / itemsPerPage);
+        const paginationContainer = $("#pagination");
+        paginationContainer.empty();
+
+        for (let i = 0; i < totalPages; i++) {
+            const pageButton = $(`<button>${i + 1}</button>`);
+            pageButton.on('click', function () {
+                currentPage = i;
+                showPage(currentPage);
+                updateActiveButtonStates();
+            });
+            paginationContainer.append(pageButton);
+        }
+    }
+
+    function updateActiveButtonStates() {
+        const pageButtons = document.querySelectorAll('.pagination button');
+        pageButtons.forEach((button, index) => {
+            button.classList.toggle('active', index === currentPage);
+        });
+    }
+
+    function deleteUser(event, userId) {
+        event.preventDefault();
+        localStorage.setItem('currentPage', currentPage.toString());
+        localStorage.setItem('countPerPage', itemsPerPage.toString());
+        localStorage.setItem('pageUpdated', 'true');
+        localStorage.setItem('selectedValue', $('#paging').val());
+
+        $.ajax({
+            url: `/rest/players/${userId}`,
+            method: 'DELETE',
+            success: function () {
+                $(`tr[data-user-id='${userId}']`).remove();
+                location.reload();
+            }
+        });
+    }
+
+    let buttonClicked = false;
+
+    function editUser(event, userId) {
+        const button = event.target;
+        button.classList.toggle('active');
+        const row = $(`tr[data-user-id='${userId}']`);
+
+        if (!buttonClicked) {
+            const nameField = $('<input>').attr('type', 'text').addClass('name-field');
+            const nameCell = row.find('.name');
+            nameField.val(nameCell.text().trim());
+            nameCell.empty().append(nameField);
+
+            const titleField = $('<input>').attr('type', 'text').addClass('title-field');
+            const titleCell = row.find('.title');
+            titleField.val(titleCell.text().trim());
+            titleCell.empty().append(titleField);
+
+            const raceCell = row.find('.race');
+            const raceSelector = $('<select>').append(
+                $('<option>').val('HUMAN').text('HUMAN'),
+                $('<option>').val('DWARF').text('DWARF'),
+                $('<option>').val('ELF').text('ELF'),
+                $('<option>').val('GIANT').text('GIANT'),
+                $('<option>').val('ORC').text('ORC'),
+                $('<option>').val('TROLL').text('TROLL'),
+                $('<option>').val('HOBBIT').text('HOBBIT')
+            ).addClass('race-selector');
+            raceSelector.val(raceCell.text().trim());
+            raceCell.empty().append(raceSelector);
+
+            const professionCell = row.find('.profession');
+            const professionSelector = $('<select>').append(
+                $('<option>').val('WARRIOR').text('WARRIOR'),
+                $('<option>').val('ROGUE').text('ROGUE'),
+                $('<option>').val('SORCERER').text('SORCERER'),
+                $('<option>').val('CLERIC').text('CLERIC'),
+                $('<option>').val('PALADIN').text('PALADIN'),
+                $('<option>').val('NAZGUL').text('NAZGUL'),
+                $('<option>').val('WARLOCK').text('WARLOCK'),
+                $('<option>').val('DRUID').text('DRUID')
+            ).addClass('profession-selector');
+            professionSelector.val(professionCell.text().trim());
+            professionCell.empty().append(professionSelector);
+
+            const bannedCell = row.find('.banned');
+            const bannedSelector = $('<select>').append(
+                $('<option>').val('true').text('true'),
+                $('<option>').val('false').text('false')
+            ).addClass('banned-selector');
+            bannedSelector.val(bannedCell.text().trim());
+            bannedCell.empty().append(bannedSelector);
+
+            buttonClicked = true;
+        } else {
+            const name = row.find('.name-field').val();
+            const title = row.find('.title-field').val();
+            const race = row.find('.race-selector').val();
+            const profession = row.find('.profession-selector').val();
+            const banned = row.find('.banned-selector').val();
+
+            const userData = { name, title, race, profession, banned };
+            console.log(userData);
+            const jsonData = JSON.stringify(userData);
+
+            saveUser(event, userId, jsonData);
+            buttonClicked = false;
+        }
+    }
+
+    function saveUser(event, userId, jsonData) {
+        event.preventDefault();
+
+        $.ajax({
+            url: `/rest/players/${userId}`,
+            method: 'POST',
+            contentType: 'application/json',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            data: jsonData,
+            success: function () {
+                location.reload();
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('userForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const nameVal = document.getElementById('name').value;
+            const titleVal = document.getElementById('title').value;
+            const raceVal = document.getElementById('race').value;
+            const professionVal = document.getElementById('profession').value;
+            const levelVal = document.getElementById('level').value;
+            let birthdayVal = document.getElementById('birthday').value;
+            birthdayVal = new Date(birthdayVal).getTime();
+            const bannedVal = document.getElementById('banned').value;
+
+            const newUserData = {
+                name: nameVal,
+                title: titleVal,
+                race: raceVal,
+                profession: professionVal,
+                level: levelVal,
+                birthday: birthdayVal,
+                banned: bannedVal
+            };
+            const newJsonData = JSON.stringify(newUserData);
+
+            $.ajax({
+                url: `/rest/players`,
+                method: 'POST',
+                contentType: 'application/json',
+                data: newJsonData,
+                success: function () {
+                    location.reload();
+                }
+            });
+        });
+    });
+</script>
+
+<br><br><hr>
+
+<br><br><span class="account-class" style="font-weight: bold; font-size: 1.5em;">Create new account:</span><br><br>
+
+<div class="new-account-fields">
+    <div class="name-input">
+        <label for="name">Name: </label>
+        <input type="text" id="name"><br>
+    </div>
+    <div class="title-input">
+        <label for="title">Title: </label>
+        <input type="text" id="title"><br>
+    </div>
+
+    <div class="race-input">
+        <label for="race">Race: </label>
+        <select class="race" id="race">
+            <option value="HUMAN">HUMAN</option>
+            <option value="DWARF">DWARF</option>
+            <option value="ELF">ELF</option>
+            <option value="GIANT">GIANT</option>
+            <option value="ORC">ORC</option>
+            <option value="TROLL">TROLL</option>
+            <option value="HOBBIT">HOBBIT</option>
+        </select><br>
+    </div>
+
+    <div class="profession-input">
+        <label for="profession">Profession: </label>
+        <select class="profession" id="profession">
+            <option value="WARRIOR">WARRIOR</option>
+            <option value="ROGUE">ROGUE</option>
+            <option value="SORCERER">SORCERER</option>
+            <option value="CLERIC">CLERIC</option>
+            <option value="PALADIN">PALADIN</option>
+            <option value="NAZGUL">NAZGUL</option>
+            <option value="WARLOCK">WARLOCK</option>
+            <option value="DRUID">DRUID</option>
+        </select><br>
+    </div>
+
+    <div class="level-input">
+        <label for="level">Level: </label>
+        <input type="text" id="level"><br>
+    </div>
+
+    <div class="birthday-input">
+        <label for="birthday">Birthday: </label>
+        <input type="date" id="birthday"><br>
+    </div>
+
+    <div class="banned-input">
+        <label for="banned">Banned: </label>
+        <select class="banned" id="banned">
+            <option value="false">false</option>
+            <option value="true">true</option>
+        </select><br><br>
+    </div>
+
+    <div class="user-form-input">
+        <form id="userForm">
+            <button class="addUser" type="submit">Save</button>
+        </form>
+    </div>
+</div>
 
 </body>
 </html>
