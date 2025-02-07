@@ -1,0 +1,47 @@
+tr:nth-child(even) {
+    padding: 2px;
+    background-color: #f2f2f2;
+}
+
+.image-cell {
+    background-color: transparent;
+    padding: 0;
+    border: none;
+}
+
+.image-cell img {
+    display: block !important;
+    width: 50%;
+    height: auto;
+}
+
+.custom-width {
+    width: 300px!important;
+}
+
+.form-select:focus {
+    border-color: #545b62;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(130,138,145,0.5);
+
+}
+
+
+.form-select {
+    background-color: #fff;
+    color: #333;
+    border-color: #444;
+}
+
+
+.form-control:focus {
+    border-color: #545b62;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(130,138,145,0.5);
+
+}
+.form-control {
+    background-color: #fff;
+    color: #333;
+    border-color: #444;
+}

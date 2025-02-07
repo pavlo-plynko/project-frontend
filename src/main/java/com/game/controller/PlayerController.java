@@ -1,5 +1,6 @@
 package com.game.controller;
 
+import com.game.dto.PlayerInfo;
 import com.game.entity.Player;
 import com.game.service.PlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.game.dto.PlayerInfo.toPlayerInfo;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -34,7 +36,7 @@ public class PlayerController {
         pageSize = isNull(pageSize) ? 3 : pageSize;
 
         List<Player> players = playerService.getAll(pageNumber, pageSize);
-        return players.stream().map(PlayerController::toPlayerInfo).collect(Collectors.toList());
+        return players.stream().map(PlayerInfo::toPlayerInfo).collect(Collectors.toList());
     }
 
     @GetMapping("/count")
@@ -60,7 +62,7 @@ public class PlayerController {
         return ResponseEntity.status(HttpStatus.OK).body(toPlayerInfo(player));
     }
 
-    @PostMapping("/{ID}")
+    @PutMapping("/{ID}")
     public ResponseEntity<PlayerInfo> updatePlayer(@PathVariable("ID") long id,
                                                    @RequestBody PlayerInfo info) {
         if (id <= 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
@@ -85,20 +87,5 @@ public class PlayerController {
         } else {
             return ResponseEntity.status(HttpStatus.OK).body(null);
         }
-    }
-
-    private static PlayerInfo toPlayerInfo(Player player) {
-        if (isNull(player)) return null;
-
-        PlayerInfo result = new PlayerInfo();
-        result.id = player.getId();
-        result.name = player.getName();
-        result.title = player.getTitle();
-        result.race = player.getRace();
-        result.profession = player.getProfession();
-        result.birthday = player.getBirthday().getTime();
-        result.banned = player.getBanned();
-        result.level = player.getLevel();
-        return result;
     }
 }

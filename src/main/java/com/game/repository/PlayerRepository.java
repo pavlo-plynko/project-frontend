@@ -60,10 +60,9 @@ public class PlayerRepository {
     public List<Player> getAll(int pageNumber, int pageSize) {
         return storage.stream()
                 .sorted(Comparator.comparingLong(Player::getId))
-                .skip((long) pageNumber * pageSize)
+                .skip(pageNumber == 0 ? 0:(long) (pageNumber) * pageSize)
                 .limit(pageSize)
                 .collect(Collectors.toList());
-
     }
 
     public int getAllCount() {
@@ -76,8 +75,14 @@ public class PlayerRepository {
         return player;
     }
 
-    public Player update(Player player) {
-        return player;
+    public Player update(Player updatedPlayer) {
+        Player searchedPlayer = findById(updatedPlayer.getId()).orElse(null);
+        if(searchedPlayer == null){
+            throw new IllegalArgumentException("Player not found with id: " + updatedPlayer.getId());
+        }
+        int listIndex = storage.indexOf(searchedPlayer);
+        storage.set(listIndex, updatedPlayer);
+        return updatedPlayer;
     }
 
     public Optional<Player> findById(long id) {
