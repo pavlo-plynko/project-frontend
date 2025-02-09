@@ -1,0 +1,158 @@
+body {
+    background: #f5f7fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+h1, h2 {
+    text-align: center;
+    color: #4A90E2;
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select {
+    width: 100%;
+    max-width: 300px;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: border-color 0.3s;
+    box-sizing: border-box;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+select:focus {
+    border-color: #4A90E2;
+    outline: none;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    margin: 20px 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+table th,
+table td {
+    padding: 12px 15px;
+    text-align: center;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+table th {
+    background-color: #e1ecf4;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+table tr:hover {
+    background-color: #f9f9f9;
+    transition: background-color 0.3s ease;
+}
+
+.edit-icon, .delete-icon {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    vertical-align: middle;
+    transition: transform 0.2s ease;
+}
+
+.edit-icon:hover, .delete-icon:hover {
+    transform: scale(1.1);
+}
+
+#pagination {
+    text-align: center;
+    margin: 20px 0;
+}
+
+#pagination button {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    margin: 0 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+#pagination button.active-page {
+    background-color: #4A90E2;
+    color: #fff;
+    border-color: #4A90E2;
+    font-weight: bold;
+}
+
+#pagination button:hover {
+    background-color: #4A90E2;
+    border-color: #4A90E2;
+    color: #fff;
+}
+
+#create-player-form {
+    background: #fff;
+    padding: 40px;
+    margin: 30px auto 0;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+}
+
+#create-player-form h2 {
+    margin-top: 0;
+    font-size: 22px;
+    color: #4A90E2;
+}
+
+#create-player-form button {
+    background-color: #4A90E2;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: block;
+    margin: 20px auto;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+#create-player-form button:hover {
+    background-color: #357ABD;
+    transform: translateY(-2px);
+}
+
+#create-player-form input,
+#create-player-form select {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+body, h1, h2, table, #pagination, #create-player-form {
+    animation: fadeIn 0.5s ease-out;
+}

@@ -1,12 +1,281 @@
 <html>
 <head>
-    <title>RPG</title>
-    <script src=https://code.jquery.com/jquery-3.6.0.min.js></script>
-    <link href="/css/my.css" rel="stylesheet">
+    <title>RPG Admin Panel</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="/rpg/css/my.css" rel="stylesheet">
 </head>
 <body>
-<h1>RPG admin panel</h1>
-<h2>Accounts list:</h2>
+<h1>RPG Admin Panel</h1>
+<h2>Accounts List:</h2>
+
+<label for="pageSize">Accounts per page:</label>
+<select id="pageSize">
+    <option value="3">3</option>
+    <option value="5">5</option>
+    <option value="10">10</option>
+    <option value="20">20</option>
+</select>
+
+<table id="accounts-table">
+    <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Title</th>
+        <th>Race</th>
+        <th>Profession</th>
+        <th>Level</th>
+        <th>Birthday</th>
+        <th>Banned</th>
+        <th>Edit</th>
+        <th>Delete</th>
+    </tr>
+</table>
+
+<div id="pagination"></div>
+
+<hr>
+<div id="create-player-form">
+    <h2>Create New Account:</h2>
+    <label for="newName">Name (1-12):</label>
+    <input type="text" id="newName" maxlength="12"><br>
+    <label for="newTitle">Title (1-30):</label>
+    <input type="text" id="newTitle" maxlength="30"><br>
+    <label for="newRace">Race:</label>
+    <select id="newRace">
+        <option value="HUMAN">HUMAN</option>
+        <option value="DWARF">DWARF</option>
+        <option value="ELF">ELF</option>
+        <option value="GIANT">GIANT</option>
+        <option value="ORC">ORC</option>
+        <option value="TROLL">TROLL</option>
+        <option value="HOBBIT">HOBBIT</option>
+    </select><br>
+    <label for="newProfession">Profession:</label>
+    <select id="newProfession">
+        <option value="WARRIOR">WARRIOR</option>
+        <option value="ROGUE">ROGUE</option>
+        <option value="SORCERER">SORCERER</option>
+        <option value="CLERIC">CLERIC</option>
+        <option value="PALADIN">PALADIN</option>
+        <option value="NAZGUL">NAZGUL</option>
+        <option value="WARLOCK">WARLOCK</option>
+        <option value="DRUID">DRUID</option>
+    </select><br>
+    <label for="newLevel">Level (0-100):</label>
+    <input type="number" id="newLevel" min="0" max="100"><br>
+    <label for="newBirthday">Birthday:</label>
+    <input type="date" id="newBirthday"><br>
+    <label for="newBanned">Banned:</label>
+    <select id="newBanned">
+        <option value="false" selected>false</option>
+        <option value="true">true</option>
+    </select><br>
+    <button id="createPlayerBtn">Create Player</button>
+</div>
+
+<script>
+    $(function() {
+        let currentPage = 0;
+        let pageSize = parseInt($('#pageSize').val());
+        let totalPlayers = 0;
+
+        function fetchPlayerCount() {
+            $.get("/rpg/rest/players/count", function(count) {
+                totalPlayers = count;
+                renderPagination();
+                fetchPlayers(currentPage, pageSize);
+            });
+        }
+
+        function fetchPlayers(page, size) {
+            $.get("/rpg/rest/players", { pageNumber: page, pageSize: size }, function(data) {
+                $('#accounts-table tr:not(:first)').remove();
+                data.forEach(player => {
+                    $("#accounts-table").append(`
+                        <tr data-id="${player.id}">
+                            <td>${player.id}</td>
+                            <td>${player.name || ''}</td>
+                            <td>${player.title || ''}</td>
+                            <td>${player.race || ''}</td>
+                            <td>${player.profession || ''}</td>
+                            <td>${player.level || ''}</td>
+                            <td>${player.birthday ? new Date(player.birthday).toLocaleDateString() : ''}</td>
+                            <td>${player.banned ? 'True' : 'False'}</td>
+                            <td><img src="/rpg/img/edit.png" class="icon edit-icon" data-id="${player.id}" alt="Edit"></td>
+                            <td><img src="/rpg/img/delete.png" class="icon delete-icon" data-id="${player.id}" alt="Delete"></td>
+                        </tr>
+                    `);
+                });
+                highlightActivePage();
+            });
+        }
+
+        function deletePlayer(playerId) {
+            $.ajax({
+                url: `/rpg/rest/players/${playerId}`,
+                type: 'DELETE',
+                success: function() {
+                    if (currentPage * pageSize >= totalPlayers - 1 && currentPage > 0) {
+                        currentPage--;
+                    }
+                    fetchPlayerCount();
+                }
+            });
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(totalPlayers / pageSize);
+            $('#pagination').empty();
+            for (let i = 0; i < totalPages; i++) {
+                $('#pagination').append(`<button class="page-btn" data-page="${i}">${i + 1}</button>`);
+            }
+            highlightActivePage();
+        }
+
+        function highlightActivePage() {
+            $('.page-btn').removeClass('active-page');
+            $(`.page-btn[data-page='${currentPage}']`).addClass('active-page');
+        }
+
+        function toggleEditMode(row) {
+            const editIcon = row.find('.edit-icon');
+            const deleteIcon = row.find('.delete-icon');
+
+            if (editIcon.attr('alt') === 'Edit') {
+                deleteIcon.hide();
+                editIcon.attr('src', '/rpg/img/save.png').attr('alt', 'Save');
+
+                let nameCell = row.find('td').eq(1);
+                let titleCell = row.find('td').eq(2);
+                let raceCell = row.find('td').eq(3);
+                let professionCell = row.find('td').eq(4);
+                let bannedCell = row.find('td').eq(7);
+
+                let nameVal = nameCell.text().trim();
+                let titleVal = titleCell.text().trim();
+                let raceVal = raceCell.text().trim();
+                let professionVal = professionCell.text().trim();
+                let bannedVal = bannedCell.text().trim();
+                let bannedChecked = bannedVal === 'Yes';
+
+                nameCell.html(`<input type="text" value="${nameVal}" />`);
+                titleCell.html(`<input type="text" value="${titleVal}" />`);
+
+                let raceOptions = ["HUMAN", "DWARF", "ELF", "GIANT", "ORC", "TROLL", "HOBBIT"];
+                let raceSelect = `<select>`;
+                raceOptions.forEach(race => {
+                    raceSelect += `<option value="${race}" ${race === raceVal ? 'selected' : ''}>${race}</option>`;
+                });
+                raceSelect += `</select>`;
+                raceCell.html(raceSelect);
+
+                let professionOptions = ["WARRIOR", "ROGUE", "SORCERER", "CLERIC", "PALADIN", "NAZGUL", "WARLOCK", "DRUID"];
+                let professionSelect = `<select>`;
+                professionOptions.forEach(prof => {
+                    professionSelect += `<option value="${prof}" ${prof === professionVal ? 'selected' : ''}>${prof}</option>`;
+                });
+                professionSelect += `</select>`;
+                professionCell.html(professionSelect);
+
+                bannedCell.html(`
+                <select>
+                    <option value="true" ${bannedChecked ? 'selected' : ''}>True</option>
+                    <option value="false" ${!bannedChecked ? 'selected' : ''}>False</option>
+                </select>
+                `);
+            } else {
+                const playerId = row.data('id');
+                let name = row.find('td').eq(1).find('input').val();
+                let title = row.find('td').eq(2).find('input').val();
+                let race = row.find('td').eq(3).find('select').val();
+                let profession = row.find('td').eq(4).find('select').val();
+                let banned = row.find('td').eq(7).find('select').val() === 'true';
+
+                let payload = {
+                    name: name,
+                    title: title,
+                    race: race,
+                    profession: profession,
+                    banned: banned
+                };
+
+                $.ajax({
+                    url: `/rpg/rest/players/${playerId}`,
+                    type: 'POST',
+                    data: JSON.stringify(payload),
+                    contentType: "application/json",
+                    success: function() {
+                        fetchPlayerCount();
+                    }
+                });
+            }
+        }
+
+        $('#pagination').on('click', '.page-btn', function() {
+            currentPage = $(this).data('page');
+            fetchPlayers(currentPage, pageSize);
+        });
+
+        $('#pageSize').change(function() {
+            pageSize = parseInt($(this).val());
+            currentPage = 0;
+            fetchPlayerCount();
+        });
+
+        $('#accounts-table').on('click', '.edit-icon', function() {
+            const row = $(this).closest('tr');
+            toggleEditMode(row);
+        });
+
+        $('#accounts-table').on('click', '.delete-icon', function() {
+            const playerId = $(this).data('id');
+            deletePlayer(playerId);
+        });
+
+        fetchPlayerCount();
+    });
+    $('#createPlayerBtn').click(function() {
+        let name = $('#newName').val().trim();
+        let title = $('#newTitle').val().trim();
+        let race = $('#newRace').val();
+        let profession = $('#newProfession').val();
+        let level = parseInt($('#newLevel').val());
+        let birthdayStr = $('#newBirthday').val();
+        let banned = $('#newBanned').val() === 'true';
+
+        let birthday = birthdayStr ? new Date(birthdayStr).getTime() : 0;
+
+        let payload = {
+            name: name,
+            title: title,
+            race: race,
+            profession: profession,
+            level: level,
+            birthday: birthday,
+            banned: banned
+        };
+
+        $.ajax({
+            url: '/rpg/rest/players',
+            type: 'POST',
+            data: JSON.stringify(payload),
+            contentType: "application/json",
+            success: function() {
+                $('#newName').val('');
+                $('#newTitle').val('');
+                $('#newRace').prop('selectedIndex', 0);
+                $('#newProfession').prop('selectedIndex', 0);
+                $('#newLevel').val('');
+                $('#newBirthday').val('');
+                $('#newBanned').prop('selectedIndex', 0);
+                fetchPlayerCount();
+            },
+            error: function(xhr) {
+                alert('Помилка при створенні гравця: ' + xhr.responseText);
+            }
+        });
+    });
+</script>
 
 </body>
 </html>
