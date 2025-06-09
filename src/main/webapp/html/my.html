@@ -1,12 +1,74 @@
+<!DOCTYPE html>
 <html>
 <head>
     <title>RPG</title>
-    <script src=https://code.jquery.com/jquery-3.6.0.min.js></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+            integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+            crossorigin="anonymous"></script>
+    <script defer type="module" src="html/script/main.js"></script>
     <link href="/css/my.css" rel="stylesheet">
 </head>
 <body>
 <h1>RPG admin panel</h1>
 <h2>Accounts list:</h2>
 
+<label for="page-size-select-id">Count per page:</label>
+<select id="page-size-select-id" class="page-size-select">
+    <option value="3" selected>3</option>
+    <option value="5">5</option>
+    <option value="10">10</option>
+    <option value="20">20</option>
+</select>
+
+<table class="players-table" id="players-table-id">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Title</th>
+        <th>Race</th>
+        <th>Profession</th>
+        <th>Level</th>
+        <th>Birthday</th>
+        <th>Banned</th>
+        <th>Edit</th>
+        <th>Delete</th>
+    </tr>
+    </thead>
+    <tbody class="players-table-body"></tbody>
+</table>
+
+<div class="pagination-buttons" id="pagination-buttons-id">
+    <span class="pagination-label">Pages:</span>
+    <span class="pagination-buttons-container" id="pagination-buttons-container-id"></span>
+</div>
+
+<hr>
+
+<h2>Create new account:</h2>
+<form id="new-account-form" class="input_new_account" action="rest/players" method="post">
+    <label for="name-id">Name:</label>
+    <input type="text" id="name-id" name="name" min="1" max="12" class="text-name"><br>
+
+    <label for="title-id">Title:</label>
+    <input type="text" id="title-id" name="title" min="1" max="30" class="text-title"><br>
+
+    <label for="race-id">Race:</label>
+    <select name="race" id="race-id" class="race"></select><br>
+
+    <label for="profession-id">Profession:</label>
+    <select name="profession" id="profession-id" class="profession"></select><br>
+
+    <label for="level-id">Level:</label>
+    <input type="number" id="level-id" name="level" min="0" max="100" class="level-number"><br>
+
+    <label for="birthdate-id">Birthdate:</label>
+    <input type="date" id="birthdate-id" name="birthdate" class="birthdate"><br>
+
+    <label for="banned-id">Banned:</label>
+    <select name="banned" id="banned-id" class="banned"></select><br>
+
+    <input type="submit" id="submit-save-id" value="Save">
+</form>
 </body>
 </html>

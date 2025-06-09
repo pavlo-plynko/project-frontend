@@ -1,0 +1,36 @@
+.page-size-select {
+    margin-bottom: 5px;
+}
+
+table, th, td {
+    border: 1px solid black;
+}
+
+.players-table {
+    margin-bottom: 10px;
+}
+
+.pagination-container {
+    margin-bottom: 1rem;
+}
+
+.pagination-label {
+    margin-right: 0.5rem;
+}
+
+.shaded-image {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 1.0);
+    border-radius: 4px;
+}
+
+.pagination-buttons button {
+    margin-right: 8px;
+}
+
+.text-name, .text-title, .race, .profession, .level-number, .birthdate {
+    margin-bottom: 10px;
+}
+
+.banned {
+    margin-bottom: 20px;
+}
